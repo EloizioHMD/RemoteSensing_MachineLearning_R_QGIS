@@ -1,6 +1,6 @@
 # RemoteSensing_MachineLearning_R_QGIS
 
-Projeto de Geo Data Science sobre Classificação Supervisionada de Imagens do Sensoriamento Remoto de Satélites usando algorítimos de Machine Learning e Índices Espectrais.
+### Projeto de Geo Data Science sobre Classificação Supervisionada de Imagens do Sensoriamento Remoto de Satélites usando algorítimos de Machine Learning e Índices Espectrais.
 
 ![RemoteSensing_MachineLearning_R_QGIS](https://i.imgur.com/MZdanGV.png)<br>
 
@@ -18,7 +18,41 @@ Ciência de dados é um campo interdisciplinar que usa métodos científicos, pr
 
 No entanto, a ciência de dados é diferente da ciência da computação e da ciência da informação, ou de qualquer outra ciência. O vencedor do Prêmio Turing, Jim Gray, imaginou a ciência de dados como um "quarto paradigma" das ciências (empírica, teórica, computacional e agora baseada em dados) e afirmou que "tudo na ciência está mudando por causa do impacto da tecnologia da informação" e do dilúvio de dados [(TANSLEY, 2009)](#tansley).
 
+Como já enunciei, esse projeto de Geo Data Science irá relacionar dados do sensoriamento remoto de satélites imageadores, no caso Landsat 8, onde iremos realizar classificações supervisionadas por meio dos algoritmos de Machine Learning Support Vector Machine (SVM) e Random Forest. Iremos ao longo do projeto exploratória alguns índices espectrais para compreender se estes auxiliam na acurácia dos modelos.
+
+<p align="center">
+  <img src="https://i.kym-cdn.com/photos/images/newsfeed/001/297/055/875.gif">
+</p>
+
+Nas últimas décadas, o software livre e de código aberto para geoespacial ([FOSS4G](https://foss4g.org/)) progrediu a um ritmo surpreendente. Graças a organizações como a [OSGeo](https://www.osgeo.org/), a análise de dados geográficos não é mais um privilégio daqueles com hardware e software caros: qualquer pessoa agora pode baixar e executar bibliotecas espaciais de alto desempenho.
+
+Os Sistemas de Informação Geográfica (GIS) de código aberto, como o [QGIS](https://qgis.org/pt_BR/site/), tornaram a análise geográfica acessível. Os programas GIS tendem a enfatizar as interfaces gráficas do usuário (GUIs), apesar de serem utilizados com linhas de comando (CLI). R, por outro lado, enfatiza a interface de linha de comando (CLI), que tem por melhor consequência a reprodutibilidade [(LOVELACE et al., 2019)](#love).
+
+Algumas tarefas ainda são de difícil execução sem o auxílio de uma interface gráfica para essas irei usar o QGIS e ilustrar da melhor forma possível. As demais tarefas iremos usar o R baseando-se em [scripts que deixarei acessível desde já](https://github.com/EloizioHMD/r_script).
+
+## Sobre a Área de Estudo
+
+A área do estudo onde explorar por meio de dados geoespaciais são as cidades de Petrolina e Juazeiro, os dois maiores municípios da Região Administrativa Integrada de Desenvolvimento do Polo Petrolina e Juazeiro (RIDE Petrolina e Juazeiro), uma região administrativa que engloba oito municípios e uma população de mais de 700 mil habitantes numa área com cerca de 35 mil quilômetros quadrados ([Wikipédia, 2021](#wiki)).
+
+Os municípios localizam-se na unidade geoambiental da Depressão Sertaneja, unidade que é formada pelas principais características do semiárido nordestino. Seu relevo é marcado por uma superfície de pediplanação muito monótona, sendo predominantemente suave-ondulado e atravessado por vales estreitos com vertentes dissecadas. Na linha do horizonte também pontuam elevações residuais, cristas com/sem outeiros. Esse tipo de relevo é testemunha dos ciclos intensos de erosão que atingiram o sertão nordestino ([Wikipédia, 2021](#wiki)).
+
+O clima é classificado como semiárido quente (do tipo BSh na classificação climática de Köppen-Geiger), com regime de chuvas de primavera-verão. Este clima é caracterizado pela escassez e irregularidade de chuvas, assim como a forte evaporação por conta das altas temperaturas. A temperatura média compensada anual é de 26,9 °C, possuindo verões quentes e mais úmidos e invernos mornos e secos. O índice pluviométrico é de apenas 483 milímetros por ano (mm/ano), um dos mais baixos do Brasil, com um tempo de insolação de quase 3 000 horas anuais ([Wikipédia, 2021](#wiki)).
+
+<p align="center">
+  <img src="https://thumbs.gfycat.com/DarlingMediumCanvasback-size_restricted.gif">
+</p>
+
+Estas informações precisam ser levantadas antes da aquisição das imagens de satélite, pois fornecem insight sobre os alvos imageados pelos sensores ajudando na escolha das cenas e posterior elaboração das análises.
+
+Por hoje (2021-06-02 da era cristã) é só pessoal. Nos próximos capítulos teremos:
+* Aquisição de Dados Geoespaciais Necessários
+* Correção Radiométricas das Imagens Landsat 8/OLI em softwares livres
+* Finalmente R. Comando CLI
+
+...つづく
+
 ### Referências:
 > <a name="love">LOVELACE, Robin; NOWOSAD, Jakub; MUENCHOW, Jannes</a>. [Geocomputation with R](https://geocompr.robinlovelace.net/). CRC Press, 2019.<br>
 > <a name="dhar">DHAR, Vasant</a>. [Data science and prediction. Communications of the ACM](https://dl.acm.org/doi/abs/10.1145/2500499), v. 56, n. 12, p. 64-73, 2013.<br>
 > <a name="tansley">HEY, Tony; TANSLEY, Stewart; TOLLE, Kristin.</a> [O Quarto paradigma: descobertas científicas na era da eScience](https://books.google.com.br/books?hl=pt-BR&lr=&id=bVm_4X4Wm-UC&oi=fnd&pg=PT4&dq=o+quarto+paradigma&ots=Pzplg6bdlr&sig=RtQy80y4bLEvU60NbgLOVckO4AY#v=onepage&q=o%20quarto%20paradigma&f=false). Oficina de Textos, 2011.<br>
+> <a name="wiki">PETROLINA. In: WIKIPÉDIA</a>, a enciclopédia livre. Flórida: Wikimedia Foundation, 2021. Disponível em: <https://pt.wikipedia.org/w/index.php?title=Petrolina&oldid=61213019>. Acesso em: 22 mai. 2021.<br>
