@@ -170,7 +170,13 @@ Porém, o raster nada mais é que uma matrix com valores dos pixeis, assim o que
 area_int_mask <- mask(x = l8c_mosaico, mask = area_int_utm)
 area_int_crop <- crop(area_int_mask, area_int_utm)
 ```
-Essas operação exigem um pouco mais do hardware e pode demorar.
+Essas operação exigem um pouco mais do hardware e pode demorar mais que as outras. 
+
+### Renomear camada e salvar arquivo um
+A renomeação das camadas é simples, o código basta por o código que chama o nome das camadas como objeto e inserir um conjunto de valores para substituí-los.
+```{r}
+names(area_int_crop) <- c("B1", "B2", "B3", "B4", "B5", "B6", "B7")
+```
 
 ...つづく
 
