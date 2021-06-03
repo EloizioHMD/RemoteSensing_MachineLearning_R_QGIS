@@ -67,7 +67,9 @@ Sensor infravermelho térmico (TIRS) - Construído pela NASA Goddard Space Fligh
 
 A USGS adota algumas nomenclaturas para detalhar seu produto. Assim, iremos baixar o produto Landsat 8 da collection 2 e no Level 2. O que isso significa? Iremos baixar um dado com uma segunda camada de pré-processamento, na qual a reflectância da superfície fornece uma estimativa da reflectância espectral da superfície da Terra, uma vez que seria medida ao nível do solo na ausência de dispersão ou absorção atmosférica e são gerados a partir do Código de reflectância da superfície da terra (LaSRC)([MASEK, et al., 2020](#masek))
 
-![](https://github.com/EloizioHMD/RemoteSensing_MachineLearning_R_QGIS/blob/main/arquivos/img/Captura%20de%20tela%20de%202021-06-03%2000-33-15.png?raw=true)
+<p align="center">
+  <img src="https://github.com/EloizioHMD/RemoteSensing_MachineLearning_R_QGIS/blob/main/arquivos/img/Captura%20de%20tela%20de%202021-06-03%2000-33-15.png?raw=true">
+</p>
 
 Então, no Earth Explorer, após cadastra-se junto ao USGS, poderá usar a ferramenta marque a área de interesse sob o mapa, no período com menor ocorrência de chuvas outono e inverno, como pesquisamos e em dataset selecione landsat 8 collection 2 level 2.
 * LC08_L2SP_217066_20201008_20201016_02_T1.tar
@@ -88,9 +90,87 @@ Para facilitar esse dado processado pode ser baixado neste link ou na pasta arqu
 
 A malha das áreas de todos os municípios podem ser adquiridas junto aos [geoserviços do IBGE](https://www.ibge.gov.br/geociencias/organizacao-do-territorio/malhas-territoriais/15774-malhas.html?=&t=acesso-ao-produto). Assim, usamos o QGIS para salvar as feições selecionadas (município de petrolina e juazeiro) e posteriormente usamos a ferramenta de vetor para dissolver camada transformando a camada de multipolygon para polygon. Para facilitar esse dado processado pode ser baixado [neste link](https://github.com/EloizioHMD/RemoteSensing_MachineLearning_R_QGIS/blob/main/arquivos/area_disolver.zip) ou na pasta arquivos.
 
+## Finalmente CLI
+
+Para começar a geocomputar com R é preciso instalar o R base, que pode ser baixado no site do [R-Project](https://www.r-project.org/). É possível trabalhar diretamente no R instalado por base, mas não é nada prático. Para isso, para explorar de forma mais ampla as potencialidades do R recomenda-se a instalação do [R-Studio](https://www.rstudio.com/). Com isso poderemos iniciar a “codar”. 
+
 <p align="center">
   <img src="https://memegenerator.net/img/instances/62332220/embrace-the-power-of-the-command-line.jpg">
 </p>
+
+### Carregando os pacotes
+Iremos precisar de alguns pacotes para instalação de qualquer pacote no R basta usar o comando `install.packages("nome-do-pacote")` depois de instalado podemos usar o comando `require()` ou `library()`. Assim, vamos implementar uma rotina para requerer um pacote e o R nos retorne se já está instalado (`TRUE`) ou não (`FALSE`).
+
+```{r}
+pkg <- c("raster", "rgdal", "rgeos", "sf")
+sapply(pkg, require, character.only = T)
+```
+Caso não tenha basta dar um install.packages rodar novamente a rotina até tudo sair `TRUE`.
+```{r}
+install.packages("raster")
+install.packages("rgdal")
+install.packages("rgeos")
+install.packages("sf")
+```
+
+### Carregando dados raster
+Para carregar os dados usaremos comando `list.files` e ter acesso as pastas descompactadas dos arquivos. Note que o arquivo compatado entrega diversos arquivos. Usaremos apenas os arquivos .tif referentes as bandas 1 a 7.
+
+Para otimizar essa seleção iremos buscar um padrão usando o `glob2rx()`, que utiliza das expressões regulares para retornar um padrão. Assim, se olharmos os arquivos que desejamos `LC08_L2SP_217066_20201008_20201016_02_T1_SR_B2.TIF` o trecho que se repete é o 'SR_B', sendo essa a expressão regular que desejamos.
+
+```{r}
+options(stringsAsFactors = FALSE)
+
+all_band_r1 <- list.files("R/GDS/raster/LC08_L2SP_217066_20201008_20201016_02_T1_SR/", 
+                       pattern = glob2rx("*SR_B*.TIF$"), full.names = T)
+l8c_r1 <- stack(all_band_r1)
+all_band_r2 <- list.files("R/GDS/raster/LC08_L2SP_217067_20201008_20201016_02_T1_SR/",
+                       pattern = glob2rx("*SR_B*.TIF$"), full.names = T)
+l8c_r2 <- stack(all_band_r2)
+
+l8c_mosaico <- mosaic(l8c_r1, l8c_r2, fun=mean)
+```
+O que o `options(stringsAsFactors = FALSE)` é desligar a conversão global de strings em fatores.
+
+Na sequência o código colocou em um objeto `all_band_rn` a lista de arquivos selecionados pelo padrão definido. Depois usamos esse objeto para criar um `stack()`, que é um classe raster e atribuímos ao objeto `l8c_rn`. Como não iremos trabalhar individualmente cada um desses raster, mas sim de forma única o comando `mosaic()` realiza o mosaíco das imagens.
+
+Para visualizar o resultado apenas como forma de conferir usamos o `plot(l8c_mosaico$layer.5)`, que é uma forma rápida de realizar essa atividade.
+
+<p align="center">
+  <img src="https://raw.githubusercontent.com/EloizioHMD/RemoteSensing_MachineLearning_R_QGIS/main/arquivos/img/plot_mosaic_nir_band5.png">
+</p>
+
+### Carregando dados vetoriais
+O dado a ser carregado está no formato shapefile. Precisamos carregar apenas o arquivo que contem a geometria, que é o arquivo .shp usando o `readOGR`.
+```{r}
+area_int <- readOGR("R/GDS/vector/area_disolver.shp")
+```
+Para visualizar o resultado apenas como forma de conferir pode ser usado o `plot(area_int)`.
+
+### Transformação do Sistema de Referência e Coordenadas
+
+Os objetos carregados são de duas classes destintas, vetor e raster, mas ambos são dados geoespaciais possuindo portanto um sistema de referencia e coordenadas (CRS) a qual o dado é projetado. Vejamos:
+```{r}
+> crs(area_int)
+CRS arguments:
+ +proj=longlat +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +no_defs 
+> crs(l8c_mosaico)
+CRS arguments:
+ +proj=utm +zone=24 +datum=WGS84 +units=m +no_defs 
+ ```
+Como usaremos mais adiante o vetor como mascará para recortar o raster para área de interesse precisamos deixar ambos no mesmo CRS. Podemos fazer isso por meio do seguinte código:
+```{r}
+area_int_utm <- spTransform(x = area_int, CRSobj = crs(l8c_mosaico))
+```
+
+### Aplicando Mascará(mask) e Recorte(crop)
+Como antecipei iremos aplicar sob o raster o dado vetor para "recortar" apenas os da área de interesse pelo comando `mask()`, sendo 'x' o raster e 'mask' o vetor.
+Porém, o raster nada mais é que uma matrix com valores dos pixeis, assim o que a função `mask()` faz é apagar os valores que não estão sobre a area nascarada, que apesar de não possuir a informação do pixel mantém a matriz do mesmo tamanho. Logo, para reduzirmos o tamanho da matriz usamos `crop()`.
+```{r}
+area_int_mask <- mask(x = l8c_mosaico, mask = area_int_utm)
+area_int_crop <- crop(area_int_mask, area_int_utm)
+```
+Essas operação exigem um pouco mais do hardware e pode demorar.
 
 ...つづく
 
