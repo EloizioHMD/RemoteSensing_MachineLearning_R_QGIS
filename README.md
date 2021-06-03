@@ -44,15 +44,66 @@ O clima é classificado como semiárido quente (do tipo BSh na classificação c
 
 Estas informações precisam ser levantadas antes da aquisição das imagens de satélite, pois fornecem insight sobre os alvos imageados pelos sensores ajudando na escolha das cenas e posterior elaboração das análises.
 
-Por hoje (2021-06-02 da era cristã) é só pessoal. Nos próximos capítulos teremos:
-* Aquisição de Dados Geoespaciais Necessários
-* Correção Radiométricas das Imagens Landsat 8/OLI em softwares livres
-* Finalmente R. Comando CLI
+## Aquisição de Dados Geoespaciais Necessários
+
+### Dados de Satélite
+
+Diversos serviços disponibilizam dados do sensoriamento remoto de forma gratuíta, entre eles os principais são: [Earth Explorer](https://earthexplorer.usgs.gov/), que pertence ao serviço mantenedor da missão Landsat; e [Scihub](https://scihub.copernicus.eu/dhus/#/home) que pertence ao serviço mantenedor.  Ainda é oportuno destacar o serviço do INPE onde é possível baixar os produtos da missão [CBERS](http://www.dgi.inpe.br/CDSR/).
+
+Cada sensor possui suas características, no caso iremos usar dados obtidos pelo Operational Land Imager (OLI) - Construído pela Ball Aerospace & Technologies Corporation é composto por 9 bandas espectrais, incluindo uma banda pan:
+> Banda 1 visível (0,43 - 0,45 µm) 30 m<br>
+> Banda 2 visível (0,450 - 0,51 µm) 30 m<br>
+> Banda 3 visível (0,53 - 0,59 µm) 30 m<br>
+> Banda 4 vermelha (0,64 - 0,67 µm) 30 m<br>
+> Banda 5 infravermelho próximo (0,85 - 0,88 µm) 30 m<br>
+> Banda 6 SWIR 1 (1,57 - 1,65 µm) 30 m<br>
+> Banda 7 SWIR 2 (2,11 - 2,29 µm) 30 m<br>
+> Banda 8 Pancromática (PAN) (0,50 - 0,68 µm) 15 m<br>
+> Banda 9 Cirrus (1,36 - 1,38 µm) 30 m<br>
+
+Sensor infravermelho térmico (TIRS) - Construído pela NASA Goddard Space Flight Center possuir duas bandas espectrais:
+> Banda 10 TIRS 1 (10,6 - 11,19 µm) 100 m<br>
+> Banda 11 TIRS 2 (11,5 - 12,51 µm) 100 m<br>
+
+A USGS adota algumas nomenclaturas para detalhar seu produto. Assim, iremos baixar o produto Landsat 8 da collection 2 e no Level 2. O que isso significa? Iremos baixar um dado com uma segunda camada de pré-processamento, na qual a reflectância da superfície fornece uma estimativa da reflectância espectral da superfície da Terra, uma vez que seria medida ao nível do solo na ausência de dispersão ou absorção atmosférica e são gerados a partir do Código de reflectância da superfície da terra (LaSRC)([MASEK, et al., 2020](#masek))
+
+![](https://github.com/EloizioHMD/RemoteSensing_MachineLearning_R_QGIS/blob/main/arquivos/img/Captura%20de%20tela%20de%202021-06-03%2000-33-15.png?raw=true)
+
+Então, no Earth Explorer, após cadastra-se junto ao USGS, poderá usar a ferramenta marque a área de interesse sob o mapa, no período com menor ocorrência de chuvas outono e inverno, como pesquisamos e em dataset selecione landsat 8 collection 2 level 2.
+* LC08_L2SP_217066_20201008_20201016_02_T1.tar
+* LC08_L2SP_217067_20201008_20201016_02_T1.tar
+
+Se quebrarmos esse nomme de arquivos termos muita informações sobre os dados ([USGS, 2021](#usgs)):
+
+> LC08 - Trata-se de uma produto Landsat 8<br>
+> L2SP - De level 2 de Science Product<br>
+> 217067 - Coluna e linha do orbital WRC-2<br>
+> 20201008 - Data de aquisição do dado<br>
+> 20201016 - Data de processamento do dado<br>
+> 02_T1 - Coleção 2 tier 1<br>
+
+Para facilitar esse dado processado pode ser baixado neste link ou na pasta arquivos.
+
+### Dados Vetorial
+
+A malha das áreas de todos os municípios podem ser adquiridas junto aos [geoserviços do IBGE](https://www.ibge.gov.br/geociencias/organizacao-do-territorio/malhas-territoriais/15774-malhas.html?=&t=acesso-ao-produto). Assim, usamos o QGIS para salvar as feições selecionadas (município de petrolina e juazeiro) e posteriormente usamos a ferramenta de vetor para dissolver camada transformando a camada de multipolygon para polygon. Para facilitar esse dado processado pode ser baixado [neste link](https://github.com/EloizioHMD/RemoteSensing_MachineLearning_R_QGIS/blob/main/arquivos/area_disolver.zip) ou na pasta arquivos.
+
+<p align="center">
+  <img src="https://memegenerator.net/img/instances/62332220/embrace-the-power-of-the-command-line.jpg">
+</p>
 
 ...つづく
 
 ### Referências:
+
 > <a name="love">LOVELACE, Robin; NOWOSAD, Jakub; MUENCHOW, Jannes</a>. [Geocomputation with R](https://geocompr.robinlovelace.net/). CRC Press, 2019.<br>
+
 > <a name="dhar">DHAR, Vasant</a>. [Data science and prediction. Communications of the ACM](https://dl.acm.org/doi/abs/10.1145/2500499), v. 56, n. 12, p. 64-73, 2013.<br>
+
 > <a name="tansley">HEY, Tony; TANSLEY, Stewart; TOLLE, Kristin.</a> [O Quarto paradigma: descobertas científicas na era da eScience](https://books.google.com.br/books?hl=pt-BR&lr=&id=bVm_4X4Wm-UC&oi=fnd&pg=PT4&dq=o+quarto+paradigma&ots=Pzplg6bdlr&sig=RtQy80y4bLEvU60NbgLOVckO4AY#v=onepage&q=o%20quarto%20paradigma&f=false). Oficina de Textos, 2011.<br>
+
 > <a name="wiki">PETROLINA. In: WIKIPÉDIA</a>, a enciclopédia livre. Flórida: Wikimedia Foundation, 2021. Disponível em: <https://pt.wikipedia.org/w/index.php?title=Petrolina&oldid=61213019>. Acesso em: 22 mai. 2021.<br>
+
+> <a name="masek">MASEK, Jeffrey G. et al</a>. Landsat 9: Empowering open science and applications through continuity. Remote Sensing of Environment, v. 248, p. 111968, 2020.<br>
+
+> <a name="usgs">United States Geological Survey, USGS</a>. Landsat Collection 2 Level-2 Science Products, 2021. Disponível em: <https://www.usgs.gov/core-science-systems/nli/landsat/landsat-collection-2-level-2-science-products>. Acesso em: 02 jun. 2021.<br>
