@@ -173,9 +173,78 @@ area_int_crop <- crop(area_int_mask, area_int_utm)
 Essas operação exigem um pouco mais do hardware e pode demorar mais que as outras. 
 
 ### Renomear camada e salvar arquivo um
-A renomeação das camadas é simples, o código basta por o código que chama o nome das camadas como objeto e inserir um conjunto de valores para substituí-los.
+A renomeação das camadas é simples, basta por o código que chama os nomes das camadas como objeto e inserir uma lista de valores de mesma dimensão para substituí-los
 ```{r}
 names(area_int_crop) <- c("B1", "B2", "B3", "B4", "B5", "B6", "B7")
+```
+Essa é uma função de substituição genérica, não substituindo os valores em difinitivo. Isso tem uma consequência que é para reaproveitar esse daddo no futuro deve acompanhar um arquivo .csv contendo essa lista, tal qual o código seguinte.
+```{r}
+writeRaster(x = area_int_crop, filename = "R/GDS/saida/L8_B1B7.tif")
+names_area <- names(area_int_crop)
+write.csv(x = names_area, file = "R/GDS/saida/L8_B1B7.csv")
+```
+Para nossas experíêncas de testar o desempenho dos algorítimos de classificação com e sem índices espectrais iremos salvar esse arquivo que servirá para essas análises futuras.
+
+### Aritmética da Banda para Índices Espectrais
+Primeiramente vamos atribuir a um novo o objeto o raster criado por meio dos dados geoespaciais.
+```{R}
+indices <- area_int_crop
+names(indices) <- c("B1", "B2", "B3", "B4", "B5", "B6", "B7")
+```
+Acho que aqui cabe um "disclaimer", as imagens de satélites nada mais são que a aquisição de dados do imageamento das feições terrestres registrado pelo sensor através das medições da radiação eletromagnética da luz solar refletida da superfície de qualquer objeto ([MENESES; ALMEIDA, 2012](#mene)). 
+
+A radiação ao interagir com algum objeto, em geral, parte absorvida é transformada em calor ou em algum outro tipo de energia e a parte refletida se espalha pelo espaço. O fator que mede a capacidade de um objeto de refletir a energia radiante indica a sua reflectância, enquanto que a capacidade de absorver energia radiante é indicada pela sua absortância e, da mesma forma, a capacidade de transmitir energia radiante é indicada pela sua transmitância ([MENESES; ALMEIDA, 2012](#mene)). 
+
+Podemos medir a reflectãncia de um objeto para cada tipo de radiação que compõe o espectro eletromagnético e então perceber, através dessa experiência, que a reflectãncia de um mesmo objeto pode ser diferente para cada tipo de radiação que o atinge. Se olharmos o comportamento da reflectãncia do objeto para cada comprimento de onda teremos uma conjunto de distribuição normal que é geralmente denominada por assinatura espectral ([MENESES; ALMEIDA, 2012](#mene)). 
+
+Nesse escopo é possível aplicar algébra sobre esses valores para melhora a visualização do comportamento espectral dos alvos.
+
+**Razão simples (SR)**
+
+É um índice de vegetação comum para estimar a quantidade de vegetação. É a proporção da luz espalhada no NIR e absorvida nas faixas vermelhas, que reduz os efeitos da atmosfera e da topografia. 
+
+```{R}
+indices$Simple_Ratio <- indices$B5 / indices$B4
+```
+
+**Índice de diferença de vegetação normalizada (NDVI)**
+
+É um índice padronizado que permite gerar uma imagem exibindo o verde (biomassa relativa). Este índice aproveita o contraste das características de duas bandas de um conjunto de dados raster multiespectral - a absorção do pigmento de clorofila na banda vermelha e a alta refletividade dos materiais vegetais na banda NIR.
+
+```{R}
+indices$NDVI <- (indices$B5 - indices$B4)/(indices$B5 + indices$B4)
+```
+
+**Índice de Vegetacao Ajustado ao Solo (SAVI)**
+
+O SAVI é um índice de vegetação que tenta minimizar as influências do brilho do solo usando um fator de correção do brilho do solo. Isso é freqüentemente usado em regiões áridas onde a cobertura vegetal é baixa e produz valores entre -1,0 e 1,0. O fator de correção do brilho do solo (L), que varia dependendo da quantidade de cobertura vegetal verde. Em áreas sem cobertura vegetal verde, L = 1; em áreas de cobertura vegetal verde moderada, L = 0,5; e em áreas com cobertura vegetal muito alta, L = 0, que é equivalente ao método NDVI.
+
+```{R}
+indices$SAVI <- ((1 + 0.5) * (indices$B5 - indices$B4))/((indices$B5 + indices$B4) + 0.5)
+```
+
+**Índice de Área Foliar**
+
+O IAF é um índice biofísico definido pela razão entre a área foliar de uma vegetação por unidade de área utilizada por esta vegetação, sendo um indicador da biomassa de cada pixel da imagem.
+
+```{R}
+indices$AFI <- log((0.69 - indices$SAVI)/(0.59))/0.91
+```
+
+**Índice de vegetação melhorada (EVI)**
+
+O método EVI é um índice de vegetação otimizado que leva em consideração as influências atmosféricas e o sinal de fundo da vegetação. É semelhante ao NDVI, mas é menos sensível ao ruído de fundo e atmosférico, e não se torna tão saturado quanto o NDVI ao visualizar áreas com vegetação verde muito densa.
+
+```{R}
+indices$EVI <- 2.5 * ((indices$B5 - indices$B4)/(indices$B5 + 6 * indices$B4 - 7.5 * indices$bB2 + 1))
+```
+
+**Indice de agua da diferenca normalizada (NDWI)**
+
+O NDWI é um índice para delinear e monitorar as mudanças de conteúdo nas águas superficiais. É calculado com o NIR e as faixas verdes.
+
+```{R}
+indices$NDWI <- (indices$B3 - indices$B5)/(indices$B3 + indices$B5)
 ```
 
 ...つづく
@@ -193,3 +262,7 @@ names(area_int_crop) <- c("B1", "B2", "B3", "B4", "B5", "B6", "B7")
 > <a name="masek">MASEK, Jeffrey G. et al</a>. Landsat 9: Empowering open science and applications through continuity. Remote Sensing of Environment, v. 248, p. 111968, 2020.<br>
 
 > <a name="usgs">United States Geological Survey, USGS</a>. Landsat Collection 2 Level-2 Science Products, 2021. Disponível em: <https://www.usgs.gov/core-science-systems/nli/landsat/landsat-collection-2-level-2-science-products>. Acesso em: 02 jun. 2021.<br>
+
+> <a name="mene">MENESES, Paulo Roberto; ALMEIDA, T. de.</a> Introdução ao processamento de imagens de sensoriamento remoto. Universidade de Brasília, Brasília, 2012.
+
+> <a name="band">ESRI. Band Arithmetic function—ArcGIS Pro | Documentation. Disponível em: <https://pro.arcgis.com/en/pro-app/latest/help/analysis/raster-functions/band-arithmetic-function.htm>. Acesso em: <4 de junho de 2021>.
