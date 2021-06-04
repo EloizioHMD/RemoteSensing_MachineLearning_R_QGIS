@@ -172,7 +172,7 @@ area_int_crop <- crop(area_int_mask, area_int_utm)
 ```
 Essas operação exigem um pouco mais do hardware e pode demorar mais que as outras. 
 
-### Renomear camada e salvar arquivo um
+  ### Renomear camada e salvar arquivo um
 A renomeação das camadas é simples, basta por o código que chama os nomes das camadas como objeto e inserir uma lista de valores de mesma dimensão para substituí-los
 ```{r}
 names(area_int_crop) <- c("B1", "B2", "B3", "B4", "B5", "B6", "B7")
@@ -246,6 +246,34 @@ O NDWI é um índice para delinear e monitorar as mudanças de conteúdo nas ág
 ```{R}
 indices$NDWI <- (indices$B3 - indices$B5)/(indices$B3 + indices$B5)
 ```
+
+### Plotando gráfico dos Índices em Tons de Cinza 
+
+Vamos gerar um gráfico plotando todos os indices calculados demonstrados em tons de cinza, apenas para verificar a saída.
+
+```{R}
+par(mfrow = c(2,3))
+plot(indices$Simple_Ratio, col = gray(0:100/100), main = "SR")
+plot(indices$NDVI, col = gray(0:100/100), main = "NDVI")
+plot(indices$SAVI, col = gray(0:100/100), main = "SAVI")
+plot(indices$AFI, col = gray(0:100/100), main = "AFI")
+plot(indices$EVI, col = gray(0:100/100), main = "EVI")
+plot(indices$NDWI, col = gray(0:100/100), main = "NDWI")
+```
+<p align="center">
+  <img src="https://raw.githubusercontent.com/EloizioHMD/RemoteSensing_MachineLearning_R_QGIS/main/arquivos/img/indices_area.png">
+</p>
+
+### Salvando o arquivo dois 
+
+Assim como fizemos anteriormente, vamos salvar o arquivos .tif que contém os índices.
+
+```{R}
+writeRaster(x = indices, filename = "R/GDS/saida/area_indices.tif")
+names_indices <- names(indices)
+write.csv(x = names_indices, file = "R/GDS/saida/area_indices.csv")
+```
+
 
 ...つづく
 
