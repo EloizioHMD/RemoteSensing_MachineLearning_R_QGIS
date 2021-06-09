@@ -294,3 +294,6 @@ write.csv(x = names_indices, file = "R/GDS/saida/area_indices.csv")
 > <a name="mene">MENESES, Paulo Roberto; ALMEIDA, T. de.</a> Introdução ao processamento de imagens de sensoriamento remoto. Universidade de Brasília, Brasília, 2012.
 
 > <a name="band">ESRI. Band Arithmetic function—ArcGIS Pro | Documentation. Disponível em: <https://pro.arcgis.com/en/pro-app/latest/help/analysis/raster-functions/band-arithmetic-function.htm>. Acesso em: <4 de junho de 2021>.
+
+## Sobre mim
+Oi, eu sou o Eloízio, formado em Direito e Engenharia Ambiental e Sanitária, Especialista em Geociências e Geotecnologias, Nerd das antigas e agora exploRando o R. [Para mais informações me siga nas redes](https://linktr.ee/eloiziodantas).
