@@ -264,6 +264,10 @@ plot(indices$NDWI, col = gray(0:100/100), main = "NDWI")
   <img src="https://raw.githubusercontent.com/EloizioHMD/RemoteSensing_MachineLearning_R_QGIS/main/arquivos/img/indices_area.png">
 </p>
 
+Aqui de cara vemos o primeiro problema, o EVI não funcionou. Isso tende a ocorrer quando o modelo não foi corrigido para reflectância na base da atmosfera, porém segundo nossa fonte de pesquisa o dado Landsat 8 Level 2 com os algoritmos de refletância de superfície LEDAPS e LaSRC que corrigem os efeitos de dispersão e absorção temporal, espacial e espectral de gases atmosféricos, aerossóis e vapor d'água, que são necessários para caracterizar de forma confiável a superfície terrestre da Terra.
+
+A princípio o que se extrai é que o EVI seria incompatível com os algoritmos de refletância de superfície LEDAPS e LaSRC. Porém é preciso explorar melhor essa hipóteses. Seguirei reproduzindo com o referido erro, como estamos explorando algumas outras hipóteses ao passo que exerço a relato será possível, em um momento futuro, entender melhor e propor soluções.
+
 ### Salvando o arquivo dois 
 
 Assim como fizemos anteriormente, vamos salvar o arquivos .tif que contém os índices.
