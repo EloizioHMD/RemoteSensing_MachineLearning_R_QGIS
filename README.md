@@ -278,6 +278,21 @@ names_indices <- names(indices)
 write.csv(x = names_indices, file = "R/GDS/saida/area_indices.csv")
 ```
 
+### Amostra Selecionada para Classificação no QGIS
+
+Para quem desejar apenas reproduzir os resultados que se seguem, basta acessar a pasta ou [baixar o arquivo](https://github.com/EloizioHMD/RemoteSensing_MachineLearning_R_QGIS/raw/main/arquivos/mod_classif.zip) das amostras para dar sequência ao processo. No entanto, discorrerei como realizar uma boa amostragem do que se deseja classificar. Para isso será necessário fazer uso do [software QGIS](https://www.qgis.org/pt_BR/site/) para desenvolver um arquivo vetorial contendo amostras classificadas. 
+
+Essa é uma metodologia conhecida por classificação supervisionada, ou seja, o modelo classificador irá a partir de um dado fornecido a ele tentar reproduzir para toda extensão do dado as informações como classificamos. Trata-se, portanto, de um algoritmo de Machine Learning, assim é importante compreender que caso o modelo de amostras contenha erros na forma como você classificou esse erro será propagado no modelo.
+
+Primeiramente, tenha em mente o que se deseja classificar, organize uma lista de 1 a N feições. No nosso caso veremos que selecionamos 6 feições diferentes (água, agricultura, Caatinga Arbórea Densa, Caatinga Herbácea Arbustiva, solo exposto e área urbana). 
+
+O conhecimento do território é muito importante nesse tipo de processo, dados de clima, relevo, vegetação nativa, irão lhe fornecer os insight necessário para escolher as melhores amostras. Tente fazer uma seleção das feições de forma distribuída ao longo da área estudada. Faça a seleção evitando as bordas do objeto classificado. Busque fazer o máximo de seleção, desde que estas sejam acuradas o suficiente para não confundir o modelo.
+
+Sugiro sempre que baixe o arquivo anteriormente destacado para explorarção.
+
+<p align="center">
+  <img src="https://github.com/EloizioHMD/RemoteSensing_MachineLearning_R_QGIS/raw/main/arquivos/img/Captura%20de%20tela%20de%202021-07-06%2018-04-16.jpeg">
+</p>
 
 ...つづく
 
