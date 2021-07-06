@@ -18,7 +18,7 @@ Ciência de dados é um campo interdisciplinar que usa métodos científicos, pr
 
 No entanto, a ciência de dados é diferente da ciência da computação e da ciência da informação, ou de qualquer outra ciência. O vencedor do Prêmio Turing, Jim Gray, imaginou a ciência de dados como um "quarto paradigma" das ciências (empírica, teórica, computacional e agora baseada em dados) e afirmou que "tudo na ciência está mudando por causa do impacto da tecnologia da informação" e do dilúvio de dados [(TANSLEY, 2009)](#tansley).
 
-Como já enunciei, esse projeto de Geo Data Science irá relacionar dados do sensoriamento remoto de satélites imageadores, no caso Landsat 8, onde iremos realizar classificações supervisionadas por meio dos algoritmos de Machine Learning Support Vector Machine (SVM) e Random Forest. Iremos também verificar se os índices espectrais auxiliam na acurácia dos modelos.
+Como já enunciei, esse projeto de Geo Data Science relacionará dados do sensoriamento remoto de satélites imageadores, no caso Landsat 8, onde realizaremos  classificações supervisionadas por meio de dois algoritmos de Machine Learning, Support Vector Machine (SVM) e Random Forest. Também será verificada a influência que os índices espectrais exercem na acurácia dos modelos.
 
 <p align="center">
   <img src="https://i.kym-cdn.com/photos/images/newsfeed/001/297/055/875.gif">
@@ -28,7 +28,7 @@ Nas últimas décadas, o software livre e de código aberto para geoespacial ([F
 
 Os Sistemas de Informação Geográfica (GIS) de código aberto, como o [QGIS](https://qgis.org/pt_BR/site/), tornaram a análise geográfica acessível. Os programas GIS tendem a enfatizar as interfaces gráficas do usuário (GUIs), apesar de serem utilizados com linhas de comando (CLI). R, por outro lado, enfatiza a interface de linha de comando (CLI), que tem por melhor consequência a reprodutibilidade [(LOVELACE et al., 2019)](#love).
 
-Algumas tarefas ainda são de difícil execução sem o auxílio de uma interface gráfica para essas irei usar o QGIS e ilustrar da melhor forma possível. As demais tarefas iremos usar o R baseando-se em [scripts que deixarei acessível desde já](https://github.com/EloizioHMD/r_script).
+Algumas tarefas ainda são de difícil execução sem o auxílio de uma interface gráfica. Nessa dificuldade será utilizado o software QGIS e tentarei ilustrar da melhor forma possível as etapas realizadas para a reprodutibilidade dos resultados. As demais tarefas usaremos o R baseando-se em [scripts que deixarei acessível desde já](https://github.com/EloizioHMD/r_script).
 
 ## Sobre a Área de Estudo
 
@@ -36,7 +36,7 @@ A área do estudo onde explorar por meio de dados geoespaciais são as cidades d
 
 Os municípios localizam-se na unidade geoambiental da Depressão Sertaneja, unidade que é formada pelas principais características do semiárido nordestino. Seu relevo é marcado por uma superfície de pediplanação muito monótona, sendo predominantemente suave-ondulado e atravessado por vales estreitos com vertentes dissecadas. Na linha do horizonte também pontuam elevações residuais, cristas com/sem outeiros. Esse tipo de relevo é testemunha dos ciclos intensos de erosão que atingiram o sertão nordestino ([Wikipédia, 2021](#wiki)).
 
-O clima é classificado como semiárido quente (do tipo BSh na classificação climática de Köppen-Geiger), com regime de chuvas de primavera-verão. Este clima é caracterizado pela escassez e irregularidade de chuvas, assim como a forte evaporação por conta das altas temperaturas. A temperatura média compensada anual é de 26,9 °C, possuindo verões quentes e mais úmidos e invernos mornos e secos. O índice pluviométrico é de apenas 483 milímetros por ano (mm/ano), um dos mais baixos do Brasil, com um tempo de insolação de quase 3 000 horas anuais ([Wikipédia, 2021](#wiki)).
+O clima é classificado como semiárido quente (do tipo BSh na classificação climática de Köppen-Geiger), com regime de chuvas de primavera-verão. Este clima é caracterizado pela escassez e irregularidade de chuvas, assim como a forte evaporação por conta das altas temperaturas. A temperatura média compensada anual é de 26,9 °C, possuindo verões quentes e mais úmidos e invernos mornos e secos. O índice pluviométrico é de apenas 483 milímetros por ano (mm/ano), um dos mais baixos do Brasil, com um tempo de insolação de quase 3.000 horas anuais ([Wikipédia, 2021](#wiki)).
 
 <p align="center">
   <img src="https://thumbs.gfycat.com/DarlingMediumCanvasback-size_restricted.gif">
@@ -48,9 +48,9 @@ Estas informações precisam ser levantadas antes da aquisição das imagens de 
 
 ### Dados de Satélite
 
-Diversos serviços disponibilizam dados do sensoriamento remoto de forma gratuíta, entre eles os principais são: [Earth Explorer](https://earthexplorer.usgs.gov/), que pertence ao serviço mantenedor da missão Landsat; e [Scihub](https://scihub.copernicus.eu/dhus/#/home) que pertence ao serviço mantenedor.  Ainda é oportuno destacar o serviço do INPE onde é possível baixar os produtos da missão [CBERS](http://www.dgi.inpe.br/CDSR/).
+Diversos serviços disponibilizam dados do sensoriamento remoto de forma gratuita, entre eles os principais são: [Earth Explorer](https://earthexplorer.usgs.gov/), que pertence ao serviço mantenedor da missão Landsat; e [Scihub](https://scihub.copernicus.eu/dhus/#/home) que pertence ao serviço mantenedor. Ainda é oportuno destacar o serviço do INPE onde é possível baixar os produtos da missão [CBERS](http://www.dgi.inpe.br/CDSR/).
 
-Cada sensor possui suas características, no caso iremos usar dados obtidos pelo Operational Land Imager (OLI) - Construído pela Ball Aerospace & Technologies Corporation é composto por 9 bandas espectrais, incluindo uma banda pan:
+Cada sensor possui suas características, no caso usaremos dados obtidos pelo Operational Land Imager (OLI) - Construído pela Ball Aerospace & Technologies Corporation é composto por 9 bandas espectrais, incluindo uma banda pan:
 > Banda 1 visível (0,43 - 0,45 µm) 30 m<br>
 > Banda 2 visível (0,450 - 0,51 µm) 30 m<br>
 > Banda 3 visível (0,53 - 0,59 µm) 30 m<br>
@@ -65,7 +65,7 @@ Sensor infravermelho térmico (TIRS) - Construído pela NASA Goddard Space Fligh
 > Banda 10 TIRS 1 (10,6 - 11,19 µm) 100 m<br>
 > Banda 11 TIRS 2 (11,5 - 12,51 µm) 100 m<br>
 
-A USGS adota algumas nomenclaturas para detalhar seu produto. Assim, iremos baixar o produto Landsat 8 da collection 2 e no Level 2. O que isso significa? Iremos baixar um dado com uma segunda camada de pré-processamento, na qual a reflectância da superfície fornece uma estimativa da reflectância espectral da superfície da Terra, uma vez que seria medida ao nível do solo na ausência de dispersão ou absorção atmosférica e são gerados a partir do Código de reflectância da superfície da terra (LaSRC)([MASEK, et al., 2020](#masek))
+A USGS adota algumas nomenclaturas para detalhar seu produto. Assim, baixaremos o produto Landsat 8 da collection 2 e no Level 2. O que isso significa? Será baixando um dado com uma segunda camada de pré-processamento, na qual a reflectância da superfície fornece uma estimativa da reflectância espectral da superfície da Terra, uma vez que seria medida ao nível do solo na ausência de dispersão ou absorção atmosférica e são gerados a partir do Código de reflectância da superfície da terra (LaSRC)([MASEK, et al., 2020](#masek))
 
 <p align="center">
   <img src="https://github.com/EloizioHMD/RemoteSensing_MachineLearning_R_QGIS/blob/main/arquivos/img/Captura%20de%20tela%20de%202021-06-03%2000-33-15.png?raw=true">
@@ -75,7 +75,7 @@ Então, no Earth Explorer, após cadastra-se junto ao USGS, poderá usar a ferra
 * LC08_L2SP_217066_20201008_20201016_02_T1.tar
 * LC08_L2SP_217067_20201008_20201016_02_T1.tar
 
-Se quebrarmos esse nomme de arquivos termos muita informações sobre os dados ([USGS, 2021](#usgs)):
+Se quebrarmos esse nome de arquivos termos muita informações sobre os dados ([USGS, 2021](#usgs)):
 
 > LC08 - Trata-se de uma produto Landsat 8<br>
 > L2SP - De level 2 de Science Product<br>
@@ -84,7 +84,7 @@ Se quebrarmos esse nomme de arquivos termos muita informações sobre os dados (
 > 20201016 - Data de processamento do dado<br>
 > 02_T1 - Coleção 2 tier 1<br>
 
-Para facilitar esse dado processado pode ser baixado neste link ou na pasta arquivos.
+Para facilitar esse dado processado pode ser baixado neste link ou na pasta os arquivos.
 
 ### Dados Vetorial
 
