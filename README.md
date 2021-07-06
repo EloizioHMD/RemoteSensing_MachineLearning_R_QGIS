@@ -84,7 +84,7 @@ Se quebrarmos esse nome de arquivos termos muita informações sobre os dados ([
 > 20201016 - Data de processamento do dado<br>
 > 02_T1 - Coleção 2 tier 1<br>
 
-Para facilitar esse dado processado pode ser baixado neste link ou na pasta os arquivos.
+Como os tamanhos dos arquivos excedem o limite máximo de tamanho de 100 MB, a quem desejar reproduzir será necessário acessar o site da EarthExplorer para aquisição dos dados.
 
 ### Dados Vetorial
 
