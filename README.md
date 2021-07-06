@@ -99,7 +99,7 @@ Para começar a geocomputar com R é preciso instalar o R base, que pode ser bai
 </p>
 
 ### Carregando os pacotes
-Iremos precisar de alguns pacotes para instalação de qualquer pacote no R basta usar o comando `install.packages("nome-do-pacote")` depois de instalado podemos usar o comando `require()` ou `library()`. Assim, vamos implementar uma rotina para requerer um pacote e o R nos retorne se já está instalado (`TRUE`) ou não (`FALSE`).
+Precisaremos de alguns pacotes para instalação de qualquer pacote no R basta usar o comando `install.packages("nome-do-pacote")` depois de instalado podemos usar o comando `require()` ou `library()`. Assim, vamos implementar uma rotina para requerer um pacote e o R nos retorne se já está instalado (`TRUE`) ou não (`FALSE`).
 
 ```{r}
 pkg <- c("raster", "rgdal", "rgeos", "sf")
@@ -114,9 +114,9 @@ install.packages("sf")
 ```
 
 ### Carregando dados raster
-Para carregar os dados usaremos comando `list.files` e ter acesso as pastas descompactadas dos arquivos. Note que o arquivo compatado entrega diversos arquivos. Usaremos apenas os arquivos .tif referentes as bandas 1 a 7.
+Para carregar os dados usaremos comando `list.files` e ter acesso as pastas descompactadas dos arquivos. Note que o arquivo compactado entrega diversos arquivos. Usaremos apenas os arquivos .tif referentes as bandas 1 a 7.
 
-Para otimizar essa seleção iremos buscar um padrão usando o `glob2rx()`, que utiliza das expressões regulares para retornar um padrão. Assim, se olharmos os arquivos que desejamos `LC08_L2SP_217066_20201008_20201016_02_T1_SR_B2.TIF` o trecho que se repete é o 'SR_B', sendo essa a expressão regular que desejamos.
+Para otimizar essa seleção buscaremos um padrão usando o `glob2rx()`, que se utiliza das expressões regulares para retornar um padrão. Assim, se olharmos os arquivos que desejamos `LC08_L2SP_217066_20201008_20201016_02_T1_SR_B2.TIF` o trecho que se repete é o 'SR_B', sendo essa a expressão regular que desejamos.
 
 ```{r}
 options(stringsAsFactors = FALSE)
@@ -132,7 +132,7 @@ l8c_mosaico <- mosaic(l8c_r1, l8c_r2, fun=mean)
 ```
 O que o `options(stringsAsFactors = FALSE)` é desligar a conversão global de strings em fatores.
 
-Na sequência o código colocou em um objeto `all_band_rn` a lista de arquivos selecionados pelo padrão definido. Depois usamos esse objeto para criar um `stack()`, que é um classe raster e atribuímos ao objeto `l8c_rn`. Como não iremos trabalhar individualmente cada um desses raster, mas sim de forma única o comando `mosaic()` realiza o mosaíco das imagens.
+Na sequência o código colocou em um objeto `all_band_rn` a lista de arquivos selecionados pelo padrão definido. Depois usamos esse objeto para criar um `stack()`, que é uma classe raster e atribuímos ao objeto `l8c_rn`. Como não trabalharemos individualmente cada um desses raster, mas sim de forma única, usaremos o `mosaic()` para realizar o mosaico das imagens.
 
 Para visualizar o resultado apenas como forma de conferir usamos o `plot(l8c_mosaico$layer.5)`, que é uma forma rápida de realizar essa atividade.
 
@@ -149,7 +149,7 @@ Para visualizar o resultado apenas como forma de conferir pode ser usado o `plot
 
 ### Transformação do Sistema de Referência e Coordenadas
 
-Os objetos carregados são de duas classes destintas, vetor e raster, mas ambos são dados geoespaciais possuindo portanto um sistema de referencia e coordenadas (CRS) a qual o dado é projetado. Vejamos:
+Os objetos carregados são de duas classes distintas, vetor e raster, mas ambos são dados geoespaciais possuindo portanto um sistema de referência e coordenadas (CRS) a qual o dado é projetado. Vejamos:
 ```{r}
 > crs(area_int)
 CRS arguments:
@@ -164,26 +164,26 @@ area_int_utm <- spTransform(x = area_int, CRSobj = crs(l8c_mosaico))
 ```
 
 ### Aplicando Mascará(mask) e Recorte(crop)
-Como antecipei iremos aplicar sob o raster o dado vetor para "recortar" apenas os da área de interesse pelo comando `mask()`, sendo 'x' o raster e 'mask' o vetor.
-Porém, o raster nada mais é que uma matrix com valores dos pixeis, assim o que a função `mask()` faz é apagar os valores que não estão sobre a area nascarada, que apesar de não possuir a informação do pixel mantém a matriz do mesmo tamanho. Logo, para reduzirmos o tamanho da matriz usamos `crop()`.
+Como antecipei aplicaremos sob o raster o dado vetor para “recortar” apenas os da área de interesse pelo comando `mask()`, sendo 'x' o raster e 'mask' o vetor.
+Porém, o raster nada mais é que uma matrix com valores dos pixeis, assim o que a função `mask()` faz é apagar os valores que não estão sobre a área mascarada, que apesar de não possuir a informação do pixel mantém a matriz do mesmo tamanho. Logo, para reduzirmos o tamanho da matriz usamos `crop()`.
 ```{r}
 area_int_mask <- mask(x = l8c_mosaico, mask = area_int_utm)
 area_int_crop <- crop(area_int_mask, area_int_utm)
 ```
-Essas operação exigem um pouco mais do hardware e pode demorar mais que as outras. 
+Essas operações exigem um pouco mais do hardware e pode demorar mais que as outras. 
 
-  ### Renomear camada e salvar arquivo um
-A renomeação das camadas é simples, basta por o código que chama os nomes das camadas como objeto e inserir uma lista de valores de mesma dimensão para substituí-los
+### Renomear camada e salvar arquivo um
+A renomeação das camadas é simples, basta pôr o código que chama os nomes das camadas como objeto e inserir uma lista de valores de mesma dimensão para substituí-los
 ```{r}
 names(area_int_crop) <- c("B1", "B2", "B3", "B4", "B5", "B6", "B7")
 ```
-Essa é uma função de substituição genérica, não substituindo os valores em difinitivo. Isso tem uma consequência que é para reaproveitar esse daddo no futuro deve acompanhar um arquivo .csv contendo essa lista, tal qual o código seguinte.
+Essa é uma função de substituição genérica, não substituindo os valores em definitivo. Isso tem uma consequência que é para reaproveitar esse dado no futuro deve acompanhar um arquivo .csv contendo essa lista, tal qual o código seguinte.
 ```{r}
 writeRaster(x = area_int_crop, filename = "R/GDS/saida/L8_B1B7.tif")
 names_area <- names(area_int_crop)
 write.csv(x = names_area, file = "R/GDS/saida/L8_B1B7.csv")
 ```
-Para nossas experíêncas de testar o desempenho dos algorítimos de classificação com e sem índices espectrais iremos salvar esse arquivo que servirá para essas análises futuras.
+Para nossas experiências de testar o desempenho dos algorítimos de classificação com e sem índices espectrais salvaremos esse arquivo que servirá para essas análises futuras.
 
 ### Aritmética da Banda para Índices Espectrais
 Primeiramente vamos atribuir a um novo o objeto o raster criado por meio dos dados geoespaciais.
@@ -191,13 +191,13 @@ Primeiramente vamos atribuir a um novo o objeto o raster criado por meio dos dad
 indices <- area_int_crop
 names(indices) <- c("B1", "B2", "B3", "B4", "B5", "B6", "B7")
 ```
-Acho que aqui cabe um "disclaimer", as imagens de satélites nada mais são que a aquisição de dados do imageamento das feições terrestres registrado pelo sensor através das medições da radiação eletromagnética da luz solar refletida da superfície de qualquer objeto ([MENESES; ALMEIDA, 2012](#mene)). 
+Acho que aqui cabe um "disclaimer", as imagens de satélites nada mais são que a aquisição de dados do imageamento das feições terrestres registradas pelo sensor através das medições da radiação eletromagnética da luz solar refletida da superfície de qualquer objeto ([MENESES; ALMEIDA, 2012](#mene)). 
 
 A radiação ao interagir com algum objeto, em geral, parte absorvida é transformada em calor ou em algum outro tipo de energia e a parte refletida se espalha pelo espaço. O fator que mede a capacidade de um objeto de refletir a energia radiante indica a sua reflectância, enquanto que a capacidade de absorver energia radiante é indicada pela sua absortância e, da mesma forma, a capacidade de transmitir energia radiante é indicada pela sua transmitância ([MENESES; ALMEIDA, 2012](#mene)). 
 
-Podemos medir a reflectãncia de um objeto para cada tipo de radiação que compõe o espectro eletromagnético e então perceber, através dessa experiência, que a reflectãncia de um mesmo objeto pode ser diferente para cada tipo de radiação que o atinge. Se olharmos o comportamento da reflectãncia do objeto para cada comprimento de onda teremos uma conjunto de distribuição normal que é geralmente denominada por assinatura espectral ([MENESES; ALMEIDA, 2012](#mene)). 
+Podemos medir a reflectância de um objeto para cada tipo de radiação que compõe o espectro eletromagnético e então perceber, através dessa experiência, que a reflectância de um mesmo objeto pode ser diferente para cada tipo de radiação que o atinge. Se olharmos o comportamento da reflectância do objeto para cada comprimento de onda teremos um conjunto de distribuição normal que é geralmente denominada por assinatura espectral ([MENESES; ALMEIDA, 2012](#mene)). 
 
-Nesse escopo é possível aplicar algébra sobre esses valores para melhora a visualização do comportamento espectral dos alvos.
+Nesse escopo é possível aplicar álgebra sobre esses valores para melhora a visualização do comportamento espectral dos alvos.
 
 **Razão simples (SR)**
 
@@ -217,7 +217,7 @@ indices$NDVI <- (indices$B5 - indices$B4)/(indices$B5 + indices$B4)
 
 **Índice de Vegetacao Ajustado ao Solo (SAVI)**
 
-O SAVI é um índice de vegetação que tenta minimizar as influências do brilho do solo usando um fator de correção do brilho do solo. Isso é freqüentemente usado em regiões áridas onde a cobertura vegetal é baixa e produz valores entre -1,0 e 1,0. O fator de correção do brilho do solo (L), que varia dependendo da quantidade de cobertura vegetal verde. Em áreas sem cobertura vegetal verde, L = 1; em áreas de cobertura vegetal verde moderada, L = 0,5; e em áreas com cobertura vegetal muito alta, L = 0, que é equivalente ao método NDVI.
+O SAVI é um índice de vegetação que tenta minimizar as influências do brilho do solo usando um fator de correção do brilho do solo. Isso é frequentemente usado em regiões áridas onde a cobertura vegetal é baixa e produz valores entre -1,0 e 1,0. O fator de correção do brilho do solo (L), que varia dependendo da quantidade de cobertura vegetal verde. Em áreas sem cobertura vegetal verde, L = 1; em áreas de cobertura vegetal verde moderada, L = 0,5; e em áreas com cobertura vegetal muito alta, L = 0, que é equivalente ao método NDVI.
 
 ```{R}
 indices$SAVI <- ((1 + 0.5) * (indices$B5 - indices$B4))/((indices$B5 + indices$B4) + 0.5)
@@ -249,7 +249,7 @@ indices$NDWI <- (indices$B3 - indices$B5)/(indices$B3 + indices$B5)
 
 ### Plotando gráfico dos Índices em Tons de Cinza 
 
-Vamos gerar um gráfico plotando todos os indices calculados demonstrados em tons de cinza, apenas para verificar a saída.
+Vamos gerar um gráfico plotando todos os índices calculados demonstrados em tons de cinza, apenas para verificar a saída.
 
 ```{R}
 par(mfrow = c(2,3))
@@ -264,13 +264,13 @@ plot(indices$NDWI, col = gray(0:100/100), main = "NDWI")
   <img src="https://raw.githubusercontent.com/EloizioHMD/RemoteSensing_MachineLearning_R_QGIS/main/arquivos/img/indices_area.png">
 </p>
 
-Aqui de cara vemos o primeiro problema, o EVI não funcionou. Isso tende a ocorrer quando o modelo não foi corrigido para reflectância na base da atmosfera, porém segundo nossa fonte de pesquisa o dado Landsat 8 Level 2 com os algoritmos de refletância de superfície LEDAPS e LaSRC que corrigem os efeitos de dispersão e absorção temporal, espacial e espectral de gases atmosféricos, aerossóis e vapor d'água, que são necessários para caracterizar de forma confiável a superfície terrestre da Terra.
+Aqui já detectamos o primeiro problema, o EVI não funcionou. Isso tende a ocorrer quando o modelo não foi corrigido para reflectância na base da atmosfera, porém segundo nossa fonte de pesquisa o dado Landsat 8 Level 2 com os algoritmos de refletância de superfície LEDAPS e LaSRC que corrigem os efeitos de dispersão e absorção temporal, espacial e espectral de gases atmosféricos, aerossóis e vapor d'água, que são necessários para caracterizar de forma confiável a superfície terrestre da Terra.
 
-A princípio o que se extrai é que o EVI seria incompatível com os algoritmos de refletância de superfície LEDAPS e LaSRC. Porém é preciso explorar melhor essa hipóteses. Seguirei reproduzindo com o referido erro, como estamos explorando algumas outras hipóteses ao passo que exerço a relato será possível, em um momento futuro, entender melhor e propor soluções.
+A princípio o que se extrai é que o EVI seria incompatível com os algoritmos de refletância de superfície LEDAPS e LaSRC. Porém é preciso explorar melhor essa hipótese. Seguirei reproduzindo com o referido erro, como estamos explorando algumas outras hipóteses ao passo que exerço a relato será possível, em um momento futuro, entender melhor e propor soluções.
 
 ### Salvando o arquivo dois 
 
-Assim como fizemos anteriormente, vamos salvar o arquivos .tif que contém os índices.
+Assim como fizemos anteriormente, vamos salvar os arquivos .tif que contém os índices.
 
 ```{R}
 writeRaster(x = indices, filename = "R/GDS/saida/area_indices.tif")
