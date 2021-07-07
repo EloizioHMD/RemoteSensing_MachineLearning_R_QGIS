@@ -141,7 +141,7 @@ Para visualizar o resultado apenas como forma de conferir usamos o `plot(l8c_mos
 </p>
 
 ### Carregando dados vetoriais
-O dado a ser carregado está no formato shapefile. Precisamos carregar apenas o arquivo que contem a geometria, que é o arquivo .shp usando o `readOGR`.
+O dado a ser carregado está no formato shapefile. Precisamos carregar apenas o arquivo que contem a geometria, que é o arquivo .shp, usando o `readOGR`.
 ```{r}
 area_int <- readOGR("R/GDS/vector/area_disolver.shp")
 ```
@@ -293,6 +293,14 @@ Sugiro sempre que baixe o arquivo anteriormente destacado para explorarção.
 <p align="center">
   <img src="https://github.com/EloizioHMD/RemoteSensing_MachineLearning_R_QGIS/raw/main/arquivos/img/Captura%20de%20tela%20de%202021-07-06%2018-04-16.jpeg">
 </p>
+
+### Carregando arquivo de classificacao gerado no QGIS
+
+Para carregar os dados produzidos no QGIS devem estar no formato shapefile e para carregar apenas o arquivo que contem a geometria, que é o arquivo .shp, usando o `readOGR`.
+```{R}
+amostra_classif <- readOGR("R/GDS/vector/mod_classif.shp")
+```
+É possível visualizar os dados carregados pelo comando `View(data.frame(amostra_classif))`.
 
 ...つづく
 
