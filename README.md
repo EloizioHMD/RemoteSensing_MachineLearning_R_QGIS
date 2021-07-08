@@ -101,12 +101,12 @@ Para começar a geocomputar com R é preciso instalar o R base, que pode ser bai
 ### Carregando os pacotes
 Precisaremos de alguns pacotes para instalação de qualquer pacote no R basta usar o comando `install.packages("nome-do-pacote")` depois de instalado podemos usar o comando `require()` ou `library()`. Assim, vamos implementar uma rotina para requerer um pacote e o R nos retorne se já está instalado (`TRUE`) ou não (`FALSE`).
 
-```{r}
+```R
 pkg <- c("raster", "rgdal", "rgeos", "sf")
 sapply(pkg, require, character.only = T)
 ```
 Caso não tenha basta dar um install.packages rodar novamente a rotina até tudo sair `TRUE`.
-```{r}
+```R
 install.packages("raster")
 install.packages("rgdal")
 install.packages("rgeos")
@@ -118,7 +118,7 @@ Para carregar os dados usaremos comando `list.files` e ter acesso as pastas desc
 
 Para otimizar essa seleção buscaremos um padrão usando o `glob2rx()`, que se utiliza das expressões regulares para retornar um padrão. Assim, se olharmos os arquivos que desejamos `LC08_L2SP_217066_20201008_20201016_02_T1_SR_B2.TIF` o trecho que se repete é o 'SR_B', sendo essa a expressão regular que desejamos.
 
-```{r}
+```R
 options(stringsAsFactors = FALSE)
 
 all_band_r1 <- list.files("R/GDS/raster/LC08_L2SP_217066_20201008_20201016_02_T1_SR/", 
@@ -142,7 +142,7 @@ Para visualizar o resultado apenas como forma de conferir usamos o `plot(l8c_mos
 
 ### Carregando dados vetoriais
 O dado a ser carregado está no formato shapefile. Precisamos carregar apenas o arquivo que contem a geometria, que é o arquivo .shp, usando o `readOGR`.
-```{r}
+```R
 area_int <- readOGR("R/GDS/vector/area_disolver.shp")
 ```
 Para visualizar o resultado apenas como forma de conferir pode ser usado o `plot(area_int)`.
@@ -150,7 +150,7 @@ Para visualizar o resultado apenas como forma de conferir pode ser usado o `plot
 ### Transformação do Sistema de Referência e Coordenadas
 
 Os objetos carregados são de duas classes distintas, vetor e raster, mas ambos são dados geoespaciais possuindo portanto um sistema de referência e coordenadas (CRS) a qual o dado é projetado. Vejamos:
-```{r}
+```R
 > crs(area_int)
 CRS arguments:
  +proj=longlat +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +no_defs 
@@ -159,14 +159,14 @@ CRS arguments:
  +proj=utm +zone=24 +datum=WGS84 +units=m +no_defs 
  ```
 Como usaremos mais adiante o vetor como mascará para recortar o raster para área de interesse precisamos deixar ambos no mesmo CRS. Podemos fazer isso por meio do seguinte código:
-```{r}
+```R
 area_int_utm <- spTransform(x = area_int, CRSobj = crs(l8c_mosaico))
 ```
 
 ### Aplicando Mascará(mask) e Recorte(crop)
 Como antecipei aplicaremos sob o raster o dado vetor para “recortar” apenas os da área de interesse pelo comando `mask()`, sendo 'x' o raster e 'mask' o vetor.
 Porém, o raster nada mais é que uma matrix com valores dos pixeis, assim o que a função `mask()` faz é apagar os valores que não estão sobre a área mascarada, que apesar de não possuir a informação do pixel mantém a matriz do mesmo tamanho. Logo, para reduzirmos o tamanho da matriz usamos `crop()`.
-```{r}
+```R
 area_int_mask <- mask(x = l8c_mosaico, mask = area_int_utm)
 area_int_crop <- crop(area_int_mask, area_int_utm)
 ```
@@ -174,11 +174,11 @@ Essas operações exigem um pouco mais do hardware e pode demorar mais que as ou
 
 ### Renomear camada e salvar arquivo um
 A renomeação das camadas é simples, basta pôr o código que chama os nomes das camadas como objeto e inserir uma lista de valores de mesma dimensão para substituí-los
-```{r}
+```R
 names(area_int_crop) <- c("B1", "B2", "B3", "B4", "B5", "B6", "B7")
 ```
 Essa é uma função de substituição genérica, não substituindo os valores em definitivo. Isso tem uma consequência que é para reaproveitar esse dado no futuro deve acompanhar um arquivo .csv contendo essa lista, tal qual o código seguinte.
-```{r}
+```R
 writeRaster(x = area_int_crop, filename = "R/GDS/saida/L8_B1B7.tif")
 names_area <- names(area_int_crop)
 write.csv(x = names_area, file = "R/GDS/saida/L8_B1B7.csv")
@@ -187,7 +187,7 @@ Para nossas experiências de testar o desempenho dos algorítimos de classifica�
 
 ### Aritmética da Banda para Índices Espectrais
 Primeiramente vamos atribuir a um novo o objeto o raster criado por meio dos dados geoespaciais.
-```{R}
+```R
 indices <- area_int_crop
 names(indices) <- c("B1", "B2", "B3", "B4", "B5", "B6", "B7")
 ```
@@ -203,7 +203,7 @@ Nesse escopo é possível aplicar álgebra sobre esses valores para melhora a vi
 
 É um índice de vegetação comum para estimar a quantidade de vegetação. É a proporção da luz espalhada no NIR e absorvida nas faixas vermelhas, que reduz os efeitos da atmosfera e da topografia. 
 
-```{R}
+```R
 indices$Simple_Ratio <- indices$B5 / indices$B4
 ```
 
@@ -211,7 +211,7 @@ indices$Simple_Ratio <- indices$B5 / indices$B4
 
 É um índice padronizado que permite gerar uma imagem exibindo o verde (biomassa relativa). Este índice aproveita o contraste das características de duas bandas de um conjunto de dados raster multiespectral - a absorção do pigmento de clorofila na banda vermelha e a alta refletividade dos materiais vegetais na banda NIR.
 
-```{R}
+```R
 indices$NDVI <- (indices$B5 - indices$B4)/(indices$B5 + indices$B4)
 ```
 
@@ -219,7 +219,7 @@ indices$NDVI <- (indices$B5 - indices$B4)/(indices$B5 + indices$B4)
 
 O SAVI é um índice de vegetação que tenta minimizar as influências do brilho do solo usando um fator de correção do brilho do solo. Isso é frequentemente usado em regiões áridas onde a cobertura vegetal é baixa e produz valores entre -1,0 e 1,0. O fator de correção do brilho do solo (L), que varia dependendo da quantidade de cobertura vegetal verde. Em áreas sem cobertura vegetal verde, L = 1; em áreas de cobertura vegetal verde moderada, L = 0,5; e em áreas com cobertura vegetal muito alta, L = 0, que é equivalente ao método NDVI.
 
-```{R}
+```R
 indices$SAVI <- ((1 + 0.5) * (indices$B5 - indices$B4))/((indices$B5 + indices$B4) + 0.5)
 ```
 
@@ -227,7 +227,7 @@ indices$SAVI <- ((1 + 0.5) * (indices$B5 - indices$B4))/((indices$B5 + indices$B
 
 O IAF é um índice biofísico definido pela razão entre a área foliar de uma vegetação por unidade de área utilizada por esta vegetação, sendo um indicador da biomassa de cada pixel da imagem.
 
-```{R}
+```R
 indices$AFI <- log((0.69 - indices$SAVI)/(0.59))/0.91
 ```
 
@@ -235,7 +235,7 @@ indices$AFI <- log((0.69 - indices$SAVI)/(0.59))/0.91
 
 O método EVI é um índice de vegetação otimizado que leva em consideração as influências atmosféricas e o sinal de fundo da vegetação. É semelhante ao NDVI, mas é menos sensível ao ruído de fundo e atmosférico, e não se torna tão saturado quanto o NDVI ao visualizar áreas com vegetação verde muito densa.
 
-```{R}
+```R
 indices$EVI <- 2.5 * ((indices$B5 - indices$B4)/(indices$B5 + 6 * indices$B4 - 7.5 * indices$bB2 + 1))
 ```
 
@@ -243,7 +243,7 @@ indices$EVI <- 2.5 * ((indices$B5 - indices$B4)/(indices$B5 + 6 * indices$B4 - 7
 
 O NDWI é um índice para delinear e monitorar as mudanças de conteúdo nas águas superficiais. É calculado com o NIR e as faixas verdes.
 
-```{R}
+```R
 indices$NDWI <- (indices$B3 - indices$B5)/(indices$B3 + indices$B5)
 ```
 
@@ -251,7 +251,7 @@ indices$NDWI <- (indices$B3 - indices$B5)/(indices$B3 + indices$B5)
 
 Vamos gerar um gráfico plotando todos os índices calculados demonstrados em tons de cinza, apenas para verificar a saída.
 
-```{R}
+```R
 par(mfrow = c(2,3))
 plot(indices$Simple_Ratio, col = gray(0:100/100), main = "SR")
 plot(indices$NDVI, col = gray(0:100/100), main = "NDVI")
@@ -272,7 +272,7 @@ A princípio o que se extrai é que o EVI seria incompatível com os algoritmos 
 
 Assim como fizemos anteriormente, vamos salvar os arquivos .tif que contém os índices.
 
-```{R}
+```R
 writeRaster(x = indices, filename = "R/GDS/saida/area_indices.tif")
 names_indices <- names(indices)
 write.csv(x = names_indices, file = "R/GDS/saida/area_indices.csv")
@@ -297,10 +297,160 @@ Sugiro sempre que baixe o arquivo anteriormente destacado para explorarção.
 ### Carregando arquivo de classificacao gerado no QGIS
 
 Para carregar os dados produzidos no QGIS devem estar no formato shapefile e para carregar apenas o arquivo que contem a geometria, que é o arquivo .shp, usando o `readOGR`.
-```{R}
+```R
 amostra_classif <- readOGR("R/GDS/vector/mod_classif.shp")
 ```
 É possível visualizar os dados carregados pelo comando `View(data.frame(amostra_classif))`.
+
+## Criando Modelo de Treinamento
+
+Neste ponto construiremos os modelos de treinamento para realizar a classificação. Falo no plural que para testarmos a hipótese se os indicies espectrais contribuem ou não com a classificação supervisionada faremos dois modelos, um apenas com as bandas e outro com bandas e índices.
+
+### Dissolvendo poligonos para valores unicos
+
+Primeiramente é preciso unir todos os valores únicos para feições unicas.
+
+```R
+classif_dslv <- gUnaryUnion(spgeom = amostra_classif, id = amostra_classif$classe)
+```
+
+Se passarmos o comando `classif_dslv` para verificar veremos que o objeto passou de 92 features restaram apenas 6.
+
+### Extrair atributos das classes
+
+Com a informação anteriormente estruturada, vamos ao avanço dele e cruzar as feições classificadas com o raster (neste momento apenas das bandas).
+
+```R
+atributos_band <- raster::extract(x = L8_B1B7, y = classif_dslv)
+```
+
+Esse processamento apresenta uma certa demora, variará conforme a capacidade de CPU da máquina onde está sendo processado. 
+
+### Criando o datafrane para cada classe 
+
+Durante a criação das classes selecionei as feições que presentavam do seguinte modo:
+
+| valor | classe      | descrição                                                    |
+| ----- | ----------- | ------------------------------------------------------------ |
+| 1     | agua        | Corpos hídricos                                              |
+| 2     | agricultura | Agricultura irrigada                                         |
+| 3     | CAD         | Caatinga Arbórea Densa (CAD): Engloba a vegetação arbórea densa, de porte mais elevado. Nas regiões de serra observa-se uma vegetação com característica mais exuberante, onde as condições climáticas fornecem maior vigor na vegetação. Também está presente nas regiões do interior mais planas e mais secas apresentando uma leve diferença de tonalidade; |
+| 4     | CHA         | Caatinga Herbácea Arbustiva (CHA): Segundo Fernades e Bezerra (1990) esta vegetação é do tipo xerófila surgindo em áreas com características de semiaridez. Engloba a vegetação herbácea arbustiva (porte baixo a médio) aberta à densa; |
+| 5     | solo        | Solo exposto                                                 |
+| 6     | urbano      | Malha urbana                                                 |
+
+Assim, criaremos um dataframe para cada classe observada por meio do código:
+
+```R
+agua <- data.frame(Classe = "Agua", atributos_band[[1]])
+agricultura <- data.frame(Classe = "Agricultura", atributos_band[[2]])
+CAD <- data.frame(Classe = "Caatinga Arborea Densa", atributos_band[[3]])
+CHA <- data.frame(Classe = "Caatinga Herbacea Arbustiva", atributos_band[[4]])
+solo <- data.frame(Classe = "Solo exposto", atributos_band[[5]])
+urbano <- data.frame(Classe = "Urbano", atributos_band[[6]])
+```
+
+Posteriormente combinamos os dataframes com:
+
+```R
+classif_band <- rbind(agua, agricultura, CAD, CHA, solo, urbano)
+```
+
+Ao final desse processo o objeto  `classif_band` deve possuir 80.668 valores classificados como modelo da amostras.
+
+De igualmodo, mudando o que tem que mudar, fizemos uma outro modelo incluindo os índices espectrais por meio do seguinte código:
+
+```R
+# Extrair atributos das classes com L8_INDEX
+atributos_index <- raster::extract(x = L8_INDEX, y = classif_dslv)
+
+# criando df para cada classe
+agua_i <- data.frame(Classe = "Agua", atributos_index[[1]])
+agricultura_i <- data.frame(Classe = "Agricultura", atributos_index[[2]])
+CAD_i <- data.frame(Classe = "Caatinga Arborea Densa", atributos_index[[3]])
+CHA_i <- data.frame(Classe = "Caatinga Herbacea Arbustiva", atributos_index[[4]])
+solo_i <- data.frame(Classe = "Solo exposto", atributos_index[[5]])
+urbano_i <- data.frame(Classe = "Urbano", atributos_index[[6]])
+
+# Combinando os df
+classif_index <- rbind(agua_i, agricultura_i, CAD_i, CHA_i, solo_i, urbano_i)
+```
+
+Este segundo modelo demora mais que o anterior, mas ao final o objeto `classif_index` deve possuir os mesmos 80.668 valores classificados.
+
+## Visualizações dos dados para  realização de análise exploratória
+
+### Gráfico do comportamente das classes espectrais da amostra das bandas
+
+Primeiramente vamos calcular a média para cada uma das classes:
+
+```R
+agrupado_band <- group_by(classif_band, Classe)
+media_refband <- summarise_each(agrupado_band, mean)
+```
+
+Em seguida realizamos a sua transposta:
+
+```R
+refband <- t(media_refband[,1:7])
+```
+
+Para melhorar a visualização das feições classificadas e organizar conforme os comprimentos de onda críamos dois objetos:
+
+```R
+cores <- c("green", "blue", "yellow", "orange", "brown", "pink")
+wavelength <- c(430, 450, 530, 640, 850, 1570, 2110)
+```
+
+Assim, para efetivamente construirmos o gráfico usaremos o matplot usando os objetos anteriormente criados no seguinte código:
+
+```R
+par(mar = c(5, 5, 4, 16), xpd = TRUE)
+matplot(x = wavelength, y = refband, type = 'l', lwd = 2, lty = 1,
+        xlab = "Comprimento de Onda (nm)", ylab = "Reflectancia",
+        col = cores, ylim = c(0, 30000))
+legend("topright", inset = c(- 0.6, 0), legend = media_refband$Classe, lty = 1, col = cores, ncol = 1, lwd = 2)
+```
+
+<p align="center">
+  <img src="https://github.com/EloizioHMD/RemoteSensing_MachineLearning_R_QGIS/raw/main/arquivos/img/matplot_band.png">
+</p>
+
+A área de estudo está em uma região do semiárido, com um baixo índice pluviométrico de apenas 483 milímetros por ano (mm/ano), vegetação nativa possuem características muito diversa daquelas decorrentes de atividade econômica por meio da agricultura irrigada. Os alvos possuem resposta espectral diversas uns dos outros, o que aponta para um bom resultado na classificação que será realizada.
+
+### Gráficos boxplot para compreender as Classes no Índices Espectrais
+
+Primeiramente precisaremos usar uma função `melt()` do rshape2 para executar uma fusão que converte um objeto em um quadro de dados fundido.
+
+```R
+classif_melt <- melt(classif_index)
+```
+
+Feito isso, poderemos plotar um gráfico no ggplot do tipo boxplot. Segue o código para a plotagem:
+
+```R
+ggplot(data = classif_melt, aes(Classe, value, fill = Classe)) + 
+  geom_boxplot() + 
+  facet_wrap(~variable, scales = 'free') + 
+  theme(panel.grid.major = element_line(colour = "#d3d3d3"),
+        panel.grid.minor = element_blank(),
+        panel.border = element_blank(),
+        panel.background = element_blank(),
+        text=element_text(family = "Tahoma"),
+        axis.title = element_text(face="bold", size = 10),
+        axis.text.x = element_text(colour="white", size = 0),
+        axis.text.y = element_text(colour="black", size = 10),
+        axis.line = element_line(size=1, colour = "black")) +
+  theme(plot.margin = unit(c(1,1,1,1), "lines"))
+```
+
+<p align="center">
+  <img src="https://github.com/EloizioHMD/RemoteSensing_MachineLearning_R_QGIS/raw/main/arquivos/img/plot_zoom_png">
+</p>
+
+O boxplot nos permite avaliar o desempenho dos índices junto as bandas. Como já havíamos percebido o EVI apresentou algum erro. Os demais índices de vegetação tiveram comportamento similar, NDWI destacou uma forte diferença para as massas d’água.
+
+Ainda não completamos o processo, mas aparentemente teremos um resultado muito próximo ao outro. Outra revelação interessante talvez seja o de compor com índices que destacam elementos diferentes na paisagem para facilitar a separação dos alvos.
 
 ...つづく
 
